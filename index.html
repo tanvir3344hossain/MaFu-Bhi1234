@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhisperLink — Anonymous Messages</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f7f7fb;--card:#fff;--text:#171724;--muted:#74748a;
+  --primary:#7c3aed;--primary2:#a855f7;--border:#ececf3;
+  --shadow:0 18px 55px rgba(36,24,70,.10);--danger:#ef4444
+}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+a{text-decoration:none;color:inherit}
+button,input,textarea{font:inherit}
+button{cursor:pointer;border:0}
+.nav{height:72px;background:rgba(255,255,255,.88);backdrop-filter:blur(15px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 7%;position:sticky;top:0;z-index:50}
+.logo{font-size:23px;font-weight:800;letter-spacing:-.6px}.logo span{color:var(--primary)}
+.menu-btn{width:43px;height:43px;border-radius:12px;background:#f1edff;color:var(--primary);font-size:22px}
+.menu{position:absolute;right:7%;top:63px;background:#fff;border:1px solid var(--border);border-radius:16px;padding:8px;box-shadow:var(--shadow);width:190px;display:none}
+.menu.open{display:block}.menu button{width:100%;background:white;text-align:left;padding:11px 12px;border-radius:10px;color:#383849}
+.menu button:hover{background:#f6f3ff;color:var(--primary)}
+.hero{max-width:1080px;margin:0 auto;padding:70px 22px 45px;text-align:center}
+.badge{display:inline-flex;align-items:center;gap:7px;background:#eee8ff;color:#6332c8;padding:8px 13px;border-radius:999px;font-size:13px;font-weight:700;margin-bottom:18px}
+.hero h1{font-size:clamp(38px,7vw,68px);line-height:1.03;letter-spacing:-2.5px;max-width:850px;margin:auto}
+.hero h1 span{color:var(--primary)}
+.hero p{max-width:650px;margin:20px auto;color:var(--muted);font-size:17px}
+.cta{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:white;padding:14px 22px;border-radius:14px;font-weight:750;box-shadow:0 12px 28px rgba(124,58,237,.22)}
+.cta:hover{transform:translateY(-1px)}
+.section{max-width:1080px;margin:0 auto;padding:35px 22px 75px}
+.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:24px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:28px;box-shadow:var(--shadow)}
+.card h2{font-size:22px;margin-bottom:6px}.sub{color:var(--muted);font-size:14px;margin-bottom:20px}
+.input-wrap{display:flex;gap:9px;background:#f8f8fc;border:1px solid var(--border);padding:7px;border-radius:14px}
+.input-wrap input{width:100%;border:0;outline:0;background:transparent;padding:8px 10px;color:var(--text)}
+.small-btn{background:#fff;border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-weight:700;color:var(--primary)}
+.profile{display:flex;align-items:center;gap:15px;margin-bottom:22px}.avatar{width:58px;height:58px;border-radius:18px;background:linear-gradient(135deg,#c084fc,#7c3aed);display:grid;place-items:center;color:white;font-weight:800;font-size:21px}
+.profile small{color:var(--muted)}
+.link-box{background:linear-gradient(135deg,#faf8ff,#f4efff);border:1px solid #e6dcff;border-radius:18px;padding:18px;margin-top:18px}
+.link-box code{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#5b21b6;margin-bottom:13px}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.feature{background:#fafafd;border:1px solid var(--border);border-radius:17px;padding:18px}.feature b{display:block;margin-bottom:4px}.feature span{font-size:13px;color:var(--muted)}
+.messages{display:flex;flex-direction:column;gap:12px}.msg{padding:16px;border:1px solid var(--border);border-radius:16px;background:#fcfcff}.msg-top{display:flex;justify-content:space-between;gap:12px;font-size:12px;color:var(--muted);margin-bottom:7px}.msg p{font-size:15px}.msg-actions{margin-top:10px;display:flex;gap:7px}.msg-actions button{background:#f2f1f7;border-radius:9px;padding:6px 9px;font-size:12px}.msg-actions .delete{color:var(--danger)}
+.form-card{max-width:650px;margin:30px auto;display:none}.form-card.active{display:block}
+textarea{width:100%;min-height:150px;resize:vertical;border:1px solid var(--border);border-radius:15px;padding:14px;outline:none;background:#fafafd}.counter{text-align:right;color:var(--muted);font-size:12px;margin:5px 2px 14px}
+.footer{text-align:center;padding:30px 20px;color:var(--muted);font-size:13px;border-top:1px solid var(--border)}
+.toast{position:fixed;bottom:25px;left:50%;transform:translate(-50%,20px);background:#171724;color:white;padding:12px 17px;border-radius:12px;opacity:0;pointer-events:none;transition:.25s;z-index:100}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.empty{text-align:center;padding:28px;color:var(--muted);border:1px dashed #d9d8e3;border-radius:15px}
+@media(max-width:760px){
+ .nav{padding:0 20px}.menu{right:20px}.hero{padding-top:48px}
+ .grid{grid-template-columns:1fr}.features{grid-template-columns:1fr}
+ .card{padding:21px;border-radius:20px}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="logo" href="#">Whisper<span>Link</span></a>
+  <button class="menu-btn" id="menuBtn" aria-label="Open menu">☰</button>
+  <div class="menu" id="menu">
+    <button onclick="scrollToSection('dashboard')">🏠 Dashboard</button>
+    <button onclick="openMessage()">💌 Send Message</button>
+    <button onclick="scrollToSection('inbox')">📥 My Inbox</button>
+    <button onclick="showToast('Settings coming soon!')">⚙️ Settings</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="badge">🔒 Private & Anonymous</div>
+  <h1>Say what you <span>really feel.</span></h1>
+  <p>Create your personal anonymous link and let people share honest thoughts, secrets, compliments and messages without revealing their identity.</p>
+  <a href="#dashboard" class="cta">Create Your Link →</a>
+</header>
+
+<main class="section" id="dashboard">
+  <div class="grid">
+    <section class="card">
+      <div class="profile">
+        <div class="avatar">T</div>
+        <div><h2>Tanvir's WhisperLink</h2><small>Share this link with your friends</small></div>
+      </div>
+      <div class="input-wrap">
+        <input id="shareLink" value="whisperlink.example/tanvir" readonly>
+        <button class="small-btn" onclick="copyLink()">Copy</button>
+      </div>
+      <div class="link-box">
+        <code id="linkText">https://whisperlink.example/tanvir</code>
+        <button class="cta" style="width:100%;justify-content:center" onclick="shareLink()">↗ Share My Link</button>
+      </div>
+      <div class="features">
+        <div class="feature"><b>🕵️ Anonymous</b><span>No public sender name</span></div>
+        <div class="feature"><b>💬 Honest</b><span>Speak without pressure</span></div>
+        <div class="feature"><b>🛡️ Control</b><span>Delete unwanted messages</span></div>
+      </div>
+    </section>
+
+    <section class="card" id="inbox">
+      <h2>📥 Your Inbox</h2>
+      <p class="sub">Anonymous messages people sent you</p>
+      <div class="messages" id="messages"></div>
+    </section>
+  </div>
+
+  <section class="card form-card" id="messageForm">
+    <div class="profile">
+      <div class="avatar">T</div>
+      <div><h2>Send Tanvir an anonymous message</h2><small>Your identity won't be shown publicly.</small></div>
+    </div>
+    <textarea id="message" maxlength="300" placeholder="Write what you really want to say..."></textarea>
+    <div class="counter"><span id="count">0</span>/300</div>
+    <button class="cta" style="width:100%;justify-content:center" onclick="sendMessage()">Send Anonymously 💜</button>
+  </section>
+</main>
+
+<footer class="footer">
+  © 2026 WhisperLink · Built for honest conversations
+</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+const menuBtn=document.getElementById('menuBtn');
+const menu=document.getElementById('menu');
+menuBtn.addEventListener('click',()=>menu.classList.toggle('open'));
+document.addEventListener('click',e=>{if(!menu.contains(e.target)&&e.target!==menuBtn)menu.classList.remove('open')});
+
+const defaultMessages=[
+ "You are doing better than you think. Keep going! 💜",
+ "I really like your vibe, but I was too shy to say it directly.",
+ "You should know that someone is proud of you.",
+ "Your smile makes the whole room better 😊"
+];
+
+function getMessages(){
+ return JSON.parse(localStorage.getItem('whisperMessages')||JSON.stringify(defaultMessages));
+}
+function saveMessages(m){localStorage.setItem('whisperMessages',JSON.stringify(m));}
+function renderMessages(){
+ const box=document.getElementById('messages'); const msgs=getMessages(); box.innerHTML='';
+ if(!msgs.length){box.innerHTML='<div class="empty">No messages yet.<br>Share your link and let the whispers begin!</div>';return}
+ msgs.forEach((m,i)=>{
+  const el=document.createElement('div');el.className='msg';
+  el.innerHTML=`<div class="msg-top"><span>🕵️ Anonymous</span><span>Just now</span></div>
+  <p>${escapeHTML(m)}</p><div class="msg-actions"><button onclick="likeMsg(${i})">❤️ Like</button><button class="delete" onclick="deleteMsg(${i})">🗑 Delete</button></div>`;
+  box.appendChild(el);
+ });
+}
+function escapeHTML(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+function openMessage(){
+ const f=document.getElementById('messageForm');f.classList.add('active');f.scrollIntoView({behavior:'smooth',block:'center'});document.getElementById('message').focus();menu.classList.remove('open');
+}
+function sendMessage(){
+ const input=document.getElementById('message');const text=input.value.trim();
+ if(!text){showToast('Please write a message first.');return}
+ const msgs=getMessages();msgs.unshift(text);saveMessages(msgs);input.value='';document.getElementById('count').textContent='0';renderMessages();showToast('Message sent anonymously 💜');
+}
+document.getElementById('message').addEventListener('input',e=>document.getElementById('count').textContent=e.target.value.length);
+function deleteMsg(i){const m=getMessages();m.splice(i,1);saveMessages(m);renderMessages();showToast('Message deleted.');}
+function likeMsg(i){showToast('❤️ Liked anonymously');}
+function copyLink(){
+ navigator.clipboard?.writeText(document.getElementById('linkText').textContent);
+ showToast('Link copied!');
+}
+async function shareLink(){
+ const url=document.getElementById('linkText').textContent;
+ if(navigator.share){try{await navigator.share({title:'My WhisperLink',text:'Send me an anonymous message 💜',url})}catch(e){}}
+ else copyLink();
+}
+function scrollToSection(id){document.getElementById(id).scrollIntoView({behavior:'smooth'});menu.classList.remove('open')}
+function showToast(text){const t=document.getElementById('toast');t.textContent=text;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+renderMessages();
+</script>
+</body>
+</html>
